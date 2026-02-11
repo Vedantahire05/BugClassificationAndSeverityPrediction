@@ -1,0 +1,9 @@
+requests
+pandas
+python-dotenv
+tqdm
+numpy
+scikit-learn
+xgboost
+joblib
+tqdm

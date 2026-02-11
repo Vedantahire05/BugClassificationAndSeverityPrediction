@@ -1,0 +1,38 @@
+name: ML Pipeline CI
+
+on:
+  push:
+    branches: ["main"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Setup Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Preprocess dataset
+      run: |
+        python -m src.preprocessing.preprocess_github
+
+    - name: Train type model
+      run: |
+        python -m src.models.type_model
+
+    - name: Train severity model
+      run: |
+        python -m src.models.severity_model
+
+    - name: Validate models
+      run: |
+        python -m src.validation.validate
