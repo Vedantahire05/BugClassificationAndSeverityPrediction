@@ -1,6 +1,6 @@
-import os
 import pandas as pd
 import ast
+import os
 
 from src.preprocessing.cleaner import clean_text
 from src.preprocessing.label_mapper import normalize_labels
@@ -10,21 +10,26 @@ from src.preprocessing.schema import ensure_github_columns
 def preprocess_github():
     raw_path = "dataset/raw/github_issues_raw.csv"
 
-    # ---- AUTO EXTRACTION IF RAW DATA MISSING ----
     if not os.path.exists(raw_path):
-        print("[INFO] Raw dataset not found. Running extraction...")
-        from src.data_extraction.extract_all import run_extraction
+        print("[ERROR] Raw dataset not found.")
+        print("Extraction likely failed.")
+        return
 
-        # small extraction in CI for speed
-        run_extraction(max_pages=5)
+    # ---------- SAFE READ ----------
+    try:
+        df = pd.read_csv(raw_path)
+    except pd.errors.EmptyDataError:
+        print("[ERROR] Raw dataset is empty.")
+        print("Extraction step produced no data.")
+        return
 
-    # ---- LOAD DATA ----
-    df = pd.read_csv(raw_path)
+    if df.empty:
+        print("[ERROR] Dataset contains 0 rows.")
+        return
 
-    # ensure columns exist
     df = ensure_github_columns(df)
 
-    # -------- fix labels format --------
+    # -------- labels parsing --------
     def parse_labels(x):
         if isinstance(x, list):
             return x
@@ -41,48 +46,34 @@ def preprocess_github():
     df["summary"] = df["title"].apply(clean_text)
     df["description"] = df["body"].apply(clean_text)
 
-    # -------- fix_pr_titles merge --------
+    # -------- PR titles --------
     def merge_pr_titles(val):
         if isinstance(val, list):
             return " ".join(clean_text(str(t)) for t in val)
-
         if isinstance(val, str):
             try:
                 arr = ast.literal_eval(val)
                 if isinstance(arr, list):
                     return " ".join(clean_text(str(t)) for t in arr)
-                return ""
             except:
-                return ""
-
+                pass
         return ""
 
     df["fix_pr"] = df["fix_pr_titles"].apply(merge_pr_titles)
 
-    # remove empty text rows
     df = df[(df["summary"] != "") | (df["description"] != "")]
 
-    # -------- multi-label type mapping --------
     df["type"] = df["labels"].apply(normalize_labels)
     df = df[df["type"].map(len) > 0]
 
-    # -------- bug_id --------
-    df["bug_id"] = df.apply(
-        lambda x: f"{x['repo']}#{x['number']}", axis=1
-    )
-
-    # -------- source --------
+    df["bug_id"] = df.apply(lambda x: f"{x['repo']}#{x['number']}", axis=1)
     df["source"] = "github"
 
-    # -------- merged text --------
     df["text"] = (
         df["summary"] + " " +
         df["description"] + " " +
         df["fix_pr"]
     ).str.strip()
-
-    # ensure cleaned folder exists
-    os.makedirs("dataset/cleaned", exist_ok=True)
 
     cleaned = df[[
         "bug_id",
@@ -97,10 +88,7 @@ def preprocess_github():
         "text"
     ]]
 
-    cleaned.to_csv(
-        "dataset/cleaned/github_cleaned.csv",
-        index=False
-    )
+    cleaned.to_csv("dataset/cleaned/github_cleaned.csv", index=False)
 
     print("GitHub cleaned dataset saved!")
     print(cleaned.head(5))
