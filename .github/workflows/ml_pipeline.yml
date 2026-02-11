@@ -44,6 +44,8 @@ jobs:
     # STEP 1 — Extract dataset
     # ---------------------------
     - name: Extract GitHub Issues
+      env:
+        TOKEN: ${{ secrets.TOKEN }}
       run: |
         python -m src.data_extraction.extract_all
 

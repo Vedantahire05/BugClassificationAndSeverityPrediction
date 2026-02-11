@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from tqdm import tqdm
 
 load_dotenv()
-TOKEN = os.getenv("GITHUB_TOKEN")
+TOKEN = os.getenv("TOKEN")
 
 HEADERS = {
     "Authorization": f"token {TOKEN}",
