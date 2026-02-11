@@ -9,34 +9,61 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    # ---------------------------
+    # Checkout repository
+    # ---------------------------
     - name: Checkout repo
       uses: actions/checkout@v3
 
+    # ---------------------------
+    # Python setup
+    # ---------------------------
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
-        python-version: 3.10
+        python-version: "3.10"
 
+    # ---------------------------
+    # Install dependencies
+    # ---------------------------
     - name: Install dependencies
       run: |
+        python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    # ---------------------------
+    # Create dataset directories
+    # ---------------------------
+    - name: Prepare folders
+      run: |
+        mkdir -p dataset/raw
+        mkdir -p dataset/cleaned
+        mkdir -p saved_models
+
+    # ---------------------------
     # STEP 1 — Extract dataset
+    # ---------------------------
     - name: Extract GitHub Issues
       run: |
         python -m src.data_extraction.extract_all
 
+    # ---------------------------
     # STEP 2 — Preprocess
+    # ---------------------------
     - name: Preprocess GitHub Data
       run: |
         python -m src.preprocessing.preprocess_github
 
+    # ---------------------------
     # STEP 3 — Generate severity
+    # ---------------------------
     - name: Synthesize Severity
       run: |
         python -m src.severity.synthesize_severity
 
+    # ---------------------------
     # STEP 4 — Train models
+    # ---------------------------
     - name: Train Type Model
       run: |
         python -m src.models.type_model
@@ -45,7 +72,9 @@ jobs:
       run: |
         python -m src.models.severity_model
 
+    # ---------------------------
     # STEP 5 — Validate
+    # ---------------------------
     - name: Validate Pipeline
       run: |
         python -m src.validation.validate
