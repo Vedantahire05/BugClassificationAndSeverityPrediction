@@ -2,7 +2,7 @@ name: ML Pipeline CI
 
 on:
   push:
-    branches: ["main"]
+    branches: [ main ]
 
 jobs:
   build:
@@ -15,24 +15,37 @@ jobs:
     - name: Setup Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: 3.10
 
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
 
-    - name: Preprocess dataset
+    # STEP 1 — Extract dataset
+    - name: Extract GitHub Issues
+      run: |
+        python -m src.data_extraction.extract_all
+
+    # STEP 2 — Preprocess
+    - name: Preprocess GitHub Data
       run: |
         python -m src.preprocessing.preprocess_github
 
-    - name: Train type model
+    # STEP 3 — Generate severity
+    - name: Synthesize Severity
+      run: |
+        python -m src.severity.synthesize_severity
+
+    # STEP 4 — Train models
+    - name: Train Type Model
       run: |
         python -m src.models.type_model
 
-    - name: Train severity model
+    - name: Train Severity Model
       run: |
         python -m src.models.severity_model
 
-    - name: Validate models
+    # STEP 5 — Validate
+    - name: Validate Pipeline
       run: |
         python -m src.validation.validate
