@@ -1,8 +1,30 @@
 # src/models/predict_pipeline.py
 
+import os
 import joblib
 import numpy as np
 from src.severity.ordinal_severity import compute_severity_score
+
+
+# -----------------------------
+# ENSURE MODELS EXIST
+# -----------------------------
+def ensure_models():
+    missing = not os.path.exists("saved_models/type_model.pkl")
+
+    if missing:
+        print("Models missing → training models...")
+
+        # Train type model
+        os.system("python -m src.models.type_model")
+
+        # Train severity model
+        os.system("python -m src.models.severity_model")
+
+        print("Model training completed.")
+
+
+ensure_models()
 
 
 # -----------------------------
@@ -22,7 +44,6 @@ sev_vec = joblib.load("saved_models/severity_vectorizer.pkl")
 def predict_types(text: str, threshold: float = 0.30):
     Xt = type_vec.transform([text])
 
-    # multilabel probabilities
     probs = type_model.predict_proba(Xt)[0]
 
     labels = [
@@ -31,7 +52,7 @@ def predict_types(text: str, threshold: float = 0.30):
         if p >= threshold
     ]
 
-    # fallback if none predicted
+    # fallback if nothing predicted
     if not labels:
         labels = [type_mlb.classes_[probs.argmax()]]
 
@@ -42,6 +63,7 @@ def predict_types(text: str, threshold: float = 0.30):
 # MAIN PIPELINE
 # -----------------------------
 def predict(text: str):
+
     # ---- TYPE ----
     types = predict_types(text)
 
