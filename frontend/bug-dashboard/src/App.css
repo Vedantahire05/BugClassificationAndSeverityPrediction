@@ -1,38 +1,218 @@
-.App {
-  text-align: center;
-}
-
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+/* ---------- GLOBAL ---------- */
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: linear-gradient(135deg, #1e293b, #0f172a);
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+.app {
+  min-height: 100vh;
+  padding: 30px 20px;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+/* ---------- DASHBOARD LAYOUT ---------- */
+.dashboard {
+  display: flex;
+  gap: 25px;
+  max-width: 1400px;
+  margin: auto;
+}
+
+/* LEFT SIDE */
+.left-panel {
+  width: 35%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* RIGHT SIDE */
+.right-panel {
+  width: 65%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* ---------- INPUT CARD ---------- */
+.input-card {
+  background: white;
+  color: black;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+textarea {
+  width: 100%;
+  height: 140px;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid #ddd;
+  resize: none;
+  font-size: 14px;
+}
+
+.input-footer {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* ---------- BUTTONS ---------- */
+button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #3b82f6;
+  color: white;
+  font-weight: 500;
+  transition: 0.2s;
+}
+
+button:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+button.secondary {
+  background: #64748b;
+}
+
+/* ---------- SAMPLE BUTTONS ---------- */
+.samples {
+  margin: auto;
+  max-width: 900px;
+  text-align: center;
+}
+
+.samples button {
+  margin: 6px;
+  background: #334155;
+}
+
+/* ---------- RESULT CARD ---------- */
+.result {
+  background: white;
+  color: black;
+  padding: 25px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.result h2 {
+  margin-top: 0;
+}
+
+/* ---------- SEVERITY BADGES ---------- */
+.severity {
+  padding: 5px 12px;
+  border-radius: 6px;
+  color: white;
+  font-weight: bold;
+}
+
+.sev-low { background: #22c55e; }
+.sev-medium { background: #f59e0b; }
+.sev-high { background: #ef4444; }
+.sev-critical { background: #7f1d1d; }
+
+/* ---------- PROGRESS BAR ---------- */
+.progress {
+  background: #ddd;
+  height: 10px;
+  border-radius: 10px;
+  margin: 12px 0;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  transition: width 0.4s ease;
+}
+
+.progress-bar.sev-low { background: #22c55e; }
+.progress-bar.sev-medium { background: #f59e0b; }
+.progress-bar.sev-high { background: #ef4444; }
+.progress-bar.sev-critical { background: #7f1d1d; }
+
+/* ---------- HISTORY PANEL ---------- */
+.history {
+  background: white;
+  color: black;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+  max-height: 420px;
+  overflow-y: auto;
+}
+
+.history h3 {
+  margin-top: 0;
+}
+
+.history-item {
+  padding: 12px;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  background: #f1f5f9;
+  font-size: 14px;
+}
+
+/* ---------- ANALYTICS PANEL ---------- */
+.analytics {
+  background: #1e1e2f;
+  padding: 20px;
+  border-radius: 14px;
+  color: white;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.analytics h3 {
+  margin-top: 0;
+}
+
+.analytics-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.analytics-card {
+  background: #273449;
+  padding: 14px;
+  border-radius: 10px;
+}
+
+.analytics-card p {
+  margin: 4px 0;
+}
+
+/* ---------- SCROLLBAR ---------- */
+.history::-webkit-scrollbar {
+  width: 6px;
+}
+
+.history::-webkit-scrollbar-thumb {
+  background: #cbd5f5;
+  border-radius: 10px;
+}
+
+/* ---------- RESPONSIVE ---------- */
+@media (max-width: 900px) {
+  .dashboard {
+    flex-direction: column;
   }
-  to {
-    transform: rotate(360deg);
+
+  .left-panel,
+  .right-panel {
+    width: 100%;
   }
 }

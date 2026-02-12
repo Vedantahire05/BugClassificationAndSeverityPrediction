@@ -1,29 +1,51 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import "./App.css";
+
+import BugInput from "./components/BugInput";
+import ResultCard from "./components/ResultCard";
+import HistoryPanel from "./components/HistoryPanel";
+import Loader from "./components/Loader";
+import AnalyticsPanel from "./components/AnalyticsPanel";
+
+import { analyzeBug, fetchHistory } from "./services/api";
 
 function App() {
   const [text, setText] = useState("");
   const [result, setResult] = useState(null);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  const API_URL =
-    "https://bug-classification-api.onrender.com/predict";
+  // ---------- LOAD HISTORY ----------
+  const loadHistory = async () => {
+    try {
+      const data = await fetchHistory();
 
-  const handlePredict = async () => {
-    if (!text) return;
+      const bugs = Array.isArray(data)
+        ? data
+        : data?.bugs || [];
+
+      // avoid mutating original array
+      setHistory([...bugs].reverse());
+    } catch (err) {
+      console.error("Failed to load history:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  // ---------- ANALYZE ----------
+  const handleAnalyze = async () => {
+    if (!text.trim()) return;
 
     setLoading(true);
+    setResult(null);
 
     try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ text })
-      });
-
-      const data = await res.json();
+      const data = await analyzeBug(text);
       setResult(data);
+      await loadHistory();
     } catch (err) {
       alert("API Error");
       console.error(err);
@@ -33,46 +55,32 @@ function App() {
   };
 
   return (
-    <div style={{ padding: 40, fontFamily: "Arial" }}>
-      <h1>🐞 Bug Classification Dashboard</h1>
+    <div className="app">
+      <h1>🐞 Bug Intelligence Dashboard</h1>
 
-      <textarea
-        rows="6"
-        style={{ width: "100%", padding: 10 }}
-        placeholder="Enter bug description..."
-        value={text}
-        onChange={(e) => setText(e.target.value)}
-      />
+      <div className="dashboard">
 
-      <button
-        onClick={handlePredict}
-        style={{
-          marginTop: 10,
-          padding: "10px 20px",
-          cursor: "pointer"
-        }}
-      >
-        {loading ? "Predicting..." : "Predict"}
-      </button>
-
-      {result && (
-        <div style={{ marginTop: 20 }}>
-          <h3>Prediction Result</h3>
-          <p>
-            <b>Type:</b> {result.type.join(", ")}
-          </p>
-          <p>
-            <b>Severity:</b> {result.severity}
-          </p>
-          <p>
-            <b>Severity Score:</b> {result.severity_score}
-          </p>
-          <p>
-            <b>Explanation:</b>{" "}
-            {result.explanation?.join(", ")}
-          </p>
+        {/* LEFT PANEL */}
+        <div className="left-panel">
+          <HistoryPanel history={history} />
+          <AnalyticsPanel history={history} />
         </div>
-      )}
+
+        {/* RIGHT PANEL */}
+        <div className="right-panel">
+          <BugInput
+            text={text}
+            setText={setText}
+            onAnalyze={handleAnalyze}
+            loading={loading}
+          />
+
+          {loading && <Loader />}
+
+          <ResultCard result={result} />
+        </div>
+
+      </div>
     </div>
   );
 }
