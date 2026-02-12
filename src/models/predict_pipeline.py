@@ -1,49 +1,32 @@
 # src/models/predict_pipeline.py
 
-import os
 import joblib
 import numpy as np
 from src.severity.ordinal_severity import compute_severity_score
 
 
 # -----------------------------
-# ENSURE MODELS EXIST
-# -----------------------------
-def ensure_models():
-    missing = not os.path.exists("saved_models/type_model.pkl")
-
-    if missing:
-        print("Models missing → training models...")
-
-        # Train type model
-        os.system("python -m src.models.type_model")
-
-        # Train severity model
-        os.system("python -m src.models.severity_model")
-
-        print("Model training completed.")
-
-
-ensure_models()
-
-
-# -----------------------------
 # LOAD MODELS
 # -----------------------------
-type_model = joblib.load("saved_models/type_model.pkl")
-type_vec = joblib.load("saved_models/type_vectorizer.pkl")
-type_mlb = joblib.load("saved_models/type_mlb.pkl")
+try:
+    type_model = joblib.load("saved_models/type_model.pkl")
+    type_vec = joblib.load("saved_models/type_vectorizer.pkl")
+    type_mlb = joblib.load("saved_models/type_mlb.pkl")
 
-sev_model = joblib.load("saved_models/severity_ordinal.pkl")
-sev_vec = joblib.load("saved_models/severity_vectorizer.pkl")
+    sev_model = joblib.load("saved_models/severity_ordinal.pkl")
+    sev_vec = joblib.load("saved_models/severity_vectorizer.pkl")
+
+except FileNotFoundError as e:
+    raise RuntimeError(
+        "Saved models not found. Train models locally and push saved_models/ folder."
+    ) from e
 
 
 # -----------------------------
-# TYPE INFERENCE (ROBUST)
+# TYPE INFERENCE
 # -----------------------------
 def predict_types(text: str, threshold: float = 0.30):
     Xt = type_vec.transform([text])
-
     probs = type_model.predict_proba(Xt)[0]
 
     labels = [
@@ -52,7 +35,6 @@ def predict_types(text: str, threshold: float = 0.30):
         if p >= threshold
     ]
 
-    # fallback if nothing predicted
     if not labels:
         labels = [type_mlb.classes_[probs.argmax()]]
 
@@ -64,10 +46,10 @@ def predict_types(text: str, threshold: float = 0.30):
 # -----------------------------
 def predict(text: str):
 
-    # ---- TYPE ----
+    # TYPE
     types = predict_types(text)
 
-    # ---- SEVERITY ----
+    # SEVERITY
     Xs = sev_vec.transform([text])
     ml_score = sev_model.predict(Xs)[0]
 
