@@ -9,7 +9,7 @@ __pycache__/
 dataset/
 
 # Trained models
-saved_models/
+# saved_models/
 
 # OS files
 .DS_Store
