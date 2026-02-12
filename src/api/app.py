@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 
@@ -9,6 +10,20 @@ app = FastAPI(
     version="1.0"
 )
 
+# ---------- CORS CONFIG ----------
+origins = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://bug-classification-api.onrender.com",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # allow all during development
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ---------- Request Schema ----------
 class BugRequest(BaseModel):
